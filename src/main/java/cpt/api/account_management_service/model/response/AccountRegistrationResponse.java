@@ -5,7 +5,6 @@ import lombok.Builder;
 @Builder
 public record AccountRegistrationResponse(
         String accessToken,
-        String refreshToken,
-        ErrorResponseDetails errorResponseDetails
+        String refreshToken
 ) {
 }

@@ -1,44 +1,91 @@
 package cpt.api.account_management_service.exception;
 
-import cpt.api.account_management_service.model.response.AccountRegistrationResponse;
+import cpt.api.account_management_service.enums.AccountManagementError;
 import cpt.api.account_management_service.model.response.ErrorDetails;
 import cpt.api.account_management_service.model.response.ErrorResponseDetails;
+import cpt.api.account_management_service.model.response.GlobalErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static cpt.api.account_management_service.enums.AccountManagementError.INVALID_REQUEST_BODY_ERROR;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidHeaderException.class)
-    public ResponseEntity<AccountRegistrationResponse> handleMissingRequestHeaderException(InvalidHeaderException exception) {
+    public ResponseEntity<GlobalErrorResponse> handleMissingRequestHeaderException(InvalidHeaderException exception,
+                                                                                   HttpServletRequest request) {
+        HttpStatus associatedStatus = BAD_REQUEST;
+
         List<ErrorDetails> errors = new ArrayList<>();
-        for (InvalidHeaderException ex : exception.getInvalidHeaders()) {
+        for (CumulativeErrorWrapper error : exception.getInvalidHeaderErrors()) {
             errors.add(ErrorDetails.builder()
-                    .errorCode(ex.error.getErrorCode())
-                    .errorMessage(ex.error.getErrorMessage() + ". Header: '" + ex.getHeaderName() + "'.")
+                    .errorCode(error.getError().getErrorCode())
+                    .errorMessage(error.getError().getErrorMessage() + ". Header: '" + error.getFieldName() + "'.")
                     .build());
         }
 
+        GlobalErrorResponse response = produceErrorResponse(associatedStatus, null, errors, request.getRequestURI());
+
+        return new ResponseEntity<>(response, associatedStatus);
+    }
+
+    @ExceptionHandler(InvalidRequestBodyException.class)
+    public ResponseEntity<GlobalErrorResponse> handleInvalidRequestBodyException(InvalidRequestBodyException exception,
+                                                                                   HttpServletRequest request) {
+        HttpStatus associatedStatus = BAD_REQUEST;
+
+        List<ErrorDetails> errors = new ArrayList<>();
+        for (CumulativeErrorWrapper error : exception.getInvalidBodyErrors()) {
+            errors.add(ErrorDetails.builder()
+                    .errorCode(error.getError().getErrorCode())
+                    .errorMessage(error.getError().getErrorMessage())
+                    .build());
+        }
+
+        GlobalErrorResponse response = produceErrorResponse(associatedStatus, null, errors, request.getRequestURI());
+
+        return new ResponseEntity<>(response, associatedStatus);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<GlobalErrorResponse> handleValidationExceptions(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request) {
+
+        AccountManagementError associatedError = INVALID_REQUEST_BODY_ERROR;
+
+        List<ErrorDetails> errors = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fieldError -> ErrorDetails.builder()
+                        .errorCode(associatedError.getErrorCode())
+                        .errorMessage(fieldError.getField() + " " + fieldError.getDefaultMessage())
+                        .build())
+                .toList();
+
+        GlobalErrorResponse response = produceErrorResponse(associatedError.getStatus(), associatedError.getErrorMessage(), errors, request.getRequestURI());
+
+        return new ResponseEntity<>(response, associatedError.getStatus());
+    }
+
+    public GlobalErrorResponse produceErrorResponse(HttpStatus status, String topLevelErrorMessage, List<ErrorDetails> errors, String uri) {
         ErrorResponseDetails errorResponseDetails = ErrorResponseDetails.builder()
-                .path(exception.getUri())
-                .status(String.valueOf(BAD_REQUEST.value()))
-                .statusMessage(BAD_REQUEST.getReasonPhrase())
+                .path(uri)
+                .status(String.valueOf(status.value()))
+                .statusMessage(status.getReasonPhrase())
                 .errors(errors)
                 .build();
 
-
-        AccountRegistrationResponse response = AccountRegistrationResponse.builder()
-                .accessToken(null)
-                .refreshToken(null)
-                .errorResponseDetails(errorResponseDetails)
-                .build();
-
-        return new ResponseEntity<>(response, BAD_REQUEST);
+        return GlobalErrorResponse.builder()
+                .errorResponseDetails(errorResponseDetails).build();
     }
 }

@@ -32,10 +32,6 @@ public class User {
     @Column(name = "hashed_password", nullable = false, length = 128)
     private String hashedPassword;
 
-    // We will need a 32 character long salt, which will then be based64 encoded at 24 characters long
-    @Column(name = "salt", nullable = false, length = 24)
-    private String salt;
-
     @Column(name = "username", nullable = false, length = 64, unique = true)
     private String username;
 
