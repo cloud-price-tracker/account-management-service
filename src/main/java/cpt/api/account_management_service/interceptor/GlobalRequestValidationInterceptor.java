@@ -30,6 +30,7 @@ public class GlobalRequestValidationInterceptor implements HandlerInterceptor {
         InvalidHeaderException invalidHeaderException = validateRequiredHeaders(request);
 
         if (!invalidHeaderException.getInvalidHeaderErrors().isEmpty()) {
+            log.error("Missing required header in request", invalidHeaderException);
             throw invalidHeaderException;
         }
         return true;
@@ -41,7 +42,7 @@ public class GlobalRequestValidationInterceptor implements HandlerInterceptor {
 
         String headerValue = request.getHeader(requestHeader);
         if (!headerValue.equals(expectedValue)) {
-            log.error("Invalid header value: {}, expected: {}, in request", requestHeader, expectedValue);
+            log.debug("Invalid header value: {}, expected: {}, in request", requestHeader, expectedValue);
             return new CumulativeErrorWrapper(AccountManagementError.INVALID_HTTP_HEADER_ERROR, requestHeader);
         }
         return null;
@@ -50,7 +51,7 @@ public class GlobalRequestValidationInterceptor implements HandlerInterceptor {
     private CumulativeErrorWrapper validateHeaderPresence(HttpServletRequest request, String requestHeader) {
         String headerValue = request.getHeader(requestHeader);
         if (headerValue == null) {
-            log.error("Missing required header: {}, in request", requestHeader);
+            log.debug("Missing required header: {}, in request", requestHeader);
             return new CumulativeErrorWrapper(AccountManagementError.MISSING_HTTP_HEADER_ERROR, requestHeader);
         }
         return null;

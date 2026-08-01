@@ -14,15 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/api") // TODO parameterize this with environment variables
+@RequestMapping("${app.route.prefix}")
 @Slf4j
 @RequiredArgsConstructor
 public class AccountManagementController {
 
     private final AccountRegistrationHandler requestHandler;
 
-    // TODO RETURN RESPONSE WRAPPER INSTEAD OF OBJECT
-    @PostMapping("/authentication/register")
+    @PostMapping("${app.route.registration}")
     public ResponseEntity<AccountRegistrationResponse> registerAccount(@RequestBody @Valid AccountRegistrationRequest accountRegistrationRequest) {
         AccountRegistrationResponse responseObj = requestHandler.handle(accountRegistrationRequest);
 

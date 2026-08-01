@@ -34,18 +34,22 @@ public class AccountRegistrationRequestValidator implements RequestValidator<Acc
 
         InvalidRequestBodyException invalidRequestBodyException = new InvalidRequestBodyException("One or more invalid fields found in " + request.getClass());
         if (!emailExists) {
+            log.debug("Email is unreachable or does not exist: {}", request.userDetails().email());
             invalidRequestBodyException.getInvalidBodyErrors().add(new CumulativeErrorWrapper(NONEXISTENT_EMAIL_ADDRESS_ERROR, "email"));
         }
 
         if (!uniqueEmail) {
+            log.debug("Non-unique email: {}", request.userDetails().email());
             invalidRequestBodyException.getInvalidBodyErrors().add(new CumulativeErrorWrapper(NONUNIQUE_EMAIL_ERROR, "email"));
         }
 
         if (!uniqueUsername) {
+            log.debug("Non-unique username: {}", request.userDetails().username());
             invalidRequestBodyException.getInvalidBodyErrors().add(new CumulativeErrorWrapper(NONUNIQUE_USERNAME_ERROR, "username"));
         }
 
         if (!invalidRequestBodyException.getInvalidBodyErrors().isEmpty()) {
+            log.error("Invalid request body: {} for {}", request.userDetails(), request.getClass(), invalidRequestBodyException);
             throw invalidRequestBodyException;
         }
     }
