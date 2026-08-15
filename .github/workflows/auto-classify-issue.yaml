@@ -15,10 +15,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
         run: |
-          gh issue edit "$ISSUE_URL" \
+          CURRENT_TYPE=$(gh api repos/$REPO/issues/$ISSUE_NUMBER --jq '.type // "none"')
+
+          echo "Detected current issue type: $CURRENT_TYPE"
+
+          # CONDITION 2: Only proceed if the issue type is completely empty (null / none)
+          if [ "$CURRENT_TYPE" = "none" ]; then
+            echo "Issue has no existing type or labels. Applying defaults..."
+            
+            gh issue edit "$ISSUE_URL" \
             --type "Task" \
             --add-label "phase 1"
-                  
+            
+          else
+            echo "Skipping update: Issue already has an assigned type ($CURRENT_TYPE)."
+          fi
+              
       - name: Add to Project and set field
         uses: actions/add-to-project@v1.0.2
         with:
