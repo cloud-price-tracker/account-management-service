@@ -1,0 +1,26 @@
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  repository-projects: write
+
+jobs:
+  triage-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Issue Type to Task and Add Label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          gh issue edit "$ISSUE_URL" \
+            --type "Task" \
+            --add-label "phase 1"
+                  
+      - name: Add to Project and set field
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/orgs/cloud-price-tracker/projects/2
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
