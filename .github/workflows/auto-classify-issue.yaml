@@ -1,3 +1,5 @@
+name: Auto Set Issue Type and Label
+
 on:
   issues:
     types: [opened]
@@ -14,23 +16,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
         run: |
-          CURRENT_TYPE=$(gh api repos/$REPO/issues/$ISSUE_NUMBER --jq '.type // "none"')
-
+          # Fetch the current Issue Type safely
+          CURRENT_TYPE=$(gh api repos/$REPO/issues/$ISSUE_NUMBER --jq '.type.name // "none"')
           echo "Detected current issue type: $CURRENT_TYPE"
 
-          # CONDITION 2: Only proceed if the issue type is completely empty (null / none)
+          # Condition check
           if [ "$CURRENT_TYPE" = "none" ]; then
-            echo "Issue has no existing type or labels. Applying defaults..."
+            echo "Issue has no existing type. Applying defaults..."
             
+            # Updates both native Type and attaches your custom label
             gh issue edit "$ISSUE_URL" \
-            --type "Task" \
-            --add-label "phase 1"
-            
+              --type "Task" \
+              --add-label "phase 1"
           else
             echo "Skipping update: Issue already has an assigned type ($CURRENT_TYPE)."
           fi
-              
+
       - name: Add to Project and set field
         uses: actions/add-to-project@v1.0.2
         with:
