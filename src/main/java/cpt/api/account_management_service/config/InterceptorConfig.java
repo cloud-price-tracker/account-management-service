@@ -1,0 +1,22 @@
+package cpt.api.account_management_service.config;
+
+import cpt.api.account_management_service.interceptor.GlobalRequestValidationInterceptor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+@RequiredArgsConstructor
+public class InterceptorConfig implements WebMvcConfigurer {
+
+    @Value("${app.route.prefix}")
+    private String interceptorPathPattern;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new GlobalRequestValidationInterceptor())
+                .addPathPatterns(interceptorPathPattern + "/**");
+    }
+}
