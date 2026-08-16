@@ -13,7 +13,9 @@ public enum AccountManagementError {
     INVALID_REQUEST_BODY_ERROR(HttpStatus.BAD_REQUEST, "Invalid or missing fields in request body", "1002"),
     NONUNIQUE_EMAIL_ERROR(HttpStatus.BAD_REQUEST, "Email address already in use", "1003"),
     NONUNIQUE_USERNAME_ERROR(HttpStatus.BAD_REQUEST, "Username already exists", "1004"),
-    NONEXISTENT_EMAIL_ADDRESS_ERROR(HttpStatus.BAD_REQUEST, "Email address does not exist", "1005");
+    NONEXISTENT_EMAIL_ADDRESS_ERROR(HttpStatus.BAD_REQUEST, "Email address does not exist", "1005"),
+
+    INVALID_LOGIN_INFORMATION(HttpStatus.UNAUTHORIZED, "Invalid login information", "1006");
 
     private final HttpStatus status;
     private final String errorMessage;

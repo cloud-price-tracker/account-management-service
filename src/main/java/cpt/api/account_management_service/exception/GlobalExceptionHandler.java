@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
                     .build());
         }
 
-        GlobalErrorResponse response = produceErrorResponse(associatedStatus, null, errors, request.getRequestURI());
+        GlobalErrorResponse response = produceErrorResponse(associatedStatus, errors, request.getRequestURI());
 
         return new ResponseEntity<>(response, associatedStatus);
     }
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
                     .build());
         }
 
-        GlobalErrorResponse response = produceErrorResponse(associatedStatus, null, errors, request.getRequestURI());
+        GlobalErrorResponse response = produceErrorResponse(associatedStatus, errors, request.getRequestURI());
 
         return new ResponseEntity<>(response, associatedStatus);
     }
@@ -72,12 +72,21 @@ public class GlobalExceptionHandler {
                         .build())
                 .toList();
 
-        GlobalErrorResponse response = produceErrorResponse(associatedError.getStatus(), associatedError.getErrorMessage(), errors, request.getRequestURI());
+        GlobalErrorResponse response = produceErrorResponse(associatedError.getStatus(), errors, request.getRequestURI());
 
         return new ResponseEntity<>(response, associatedError.getStatus());
     }
 
-    public GlobalErrorResponse produceErrorResponse(HttpStatus status, String topLevelErrorMessage, List<ErrorDetails> errors, String uri) {
+    @ExceptionHandler(NonCumulativeException.class)
+    public ResponseEntity<GlobalErrorResponse> handleNonCumulativeException(NonCumulativeException exception, HttpServletRequest request) {
+        AccountManagementError associatedError = exception.getAccountManagementError();
+        List<ErrorDetails> errorList = List.of(new ErrorDetails(associatedError.getErrorCode(), associatedError.getErrorMessage()));
+
+        GlobalErrorResponse errorResponse = produceErrorResponse(associatedError.getStatus(), errorList, request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, associatedError.getStatus());
+    }
+
+    public GlobalErrorResponse produceErrorResponse(HttpStatus status, List<ErrorDetails> errors, String uri) {
         ErrorResponseDetails errorResponseDetails = ErrorResponseDetails.builder()
                 .path(uri)
                 .status(String.valueOf(status.value()))

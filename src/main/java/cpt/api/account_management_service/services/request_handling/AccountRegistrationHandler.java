@@ -3,7 +3,7 @@ package cpt.api.account_management_service.services.request_handling;
 import cpt.api.account_management_service.model.entities.User;
 import cpt.api.account_management_service.model.entities.UserValidation;
 import cpt.api.account_management_service.model.request.AccountRegistrationRequest;
-import cpt.api.account_management_service.model.response.AccountRegistrationResponse;
+import cpt.api.account_management_service.model.response.GeneralAuthenticationResponse;
 import cpt.api.account_management_service.repository.UserRepository;
 import cpt.api.account_management_service.repository.UserValidationRepository;
 import cpt.api.account_management_service.services.CryptoService;
@@ -18,7 +18,7 @@ import java.time.Instant;
 
 @Slf4j
 @Service
-public class AccountRegistrationHandler implements RequestHandler<AccountRegistrationRequest, AccountRegistrationResponse> {
+public class AccountRegistrationHandler implements RequestHandler<AccountRegistrationRequest, GeneralAuthenticationResponse> {
 
     private final AccountRegistrationRequestValidator requestValidator;
     private final CryptoService cryptoService;
@@ -41,9 +41,10 @@ public class AccountRegistrationHandler implements RequestHandler<AccountRegistr
     }
 
     @Override
-    @Transactional // TODO - REMOVE COMMENT LATER - Transactional annotation is used to ensure that the entire operation is atomic
-    // i.e. it is entirely completed or not at all which is required for data consistency of the user and userValidation database objects
-    public AccountRegistrationResponse handle(AccountRegistrationRequest request) {
+    @Transactional /* TODO - REMOVE COMMENT LATER - Transactional annotation is used to ensure that the entire operation is atomic
+    i.e. it is entirely completed or not at all which is required for data consistency of the user and userValidation database objects */
+    public GeneralAuthenticationResponse handle(AccountRegistrationRequest request) {
+        log.debug("Handling user registration request");
         requestValidator.validate(request);
 
         User user = createUser(request);
@@ -53,7 +54,7 @@ public class AccountRegistrationHandler implements RequestHandler<AccountRegistr
         UserValidation savedUserValidation = userValidationRepository.save(userValidation);
         log.info("Successfully registered user: {} with ID: {} and userValidation {}", savedUser.getUsername(), savedUser.getId(), savedUserValidation.getId());
 
-        return new AccountRegistrationResponse("jwtToken", "implement with API Gateway");
+        return new GeneralAuthenticationResponse("jwtToken", "implement with API Gateway");
     }
 
     public User createUser(AccountRegistrationRequest request) {
