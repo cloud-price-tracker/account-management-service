@@ -9,7 +9,7 @@ import cpt.api.account_management_service.services.CryptoService;
 import cpt.api.account_management_service.services.TimeService;
 import cpt.api.account_management_service.services.request_handling.AccountRegistrationHandler;
 import cpt.api.account_management_service.services.validation.AccountRegistrationRequestValidator;
-import cpt.api.account_management_service.utils.AccountRegistrationRequestUtils;
+import cpt.api.account_management_service.utils.UnitTestRequestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +63,7 @@ public class AccountRegistrationHandlerTest {
     @Test
     void handle_shouldSuccessfullyCreateUserAndValidation_whenCalled() {
         // Arrange
-        AccountRegistrationRequest request = AccountRegistrationRequestUtils.generateAccountRegistrationRequest();
+        AccountRegistrationRequest request = UnitTestRequestUtils.generateAccountRegistrationRequest();
         String hashedPassword = "hashedPassword";
         String emailToken = "emailToken";
         Instant futureInstant = Instant.now();
@@ -105,7 +105,7 @@ public class AccountRegistrationHandlerTest {
         String email = "test@example.com";
         String password = "password";
         String hashedPassword = "hashedPassword";
-        AccountRegistrationRequest request = AccountRegistrationRequestUtils.generateAccountRegistrationRequest(user, email, password);
+        AccountRegistrationRequest request = UnitTestRequestUtils.generateAccountRegistrationRequest(user, email, password);
 
         when(cryptoService.hashPassword(password)).thenReturn("hashedPassword");
 

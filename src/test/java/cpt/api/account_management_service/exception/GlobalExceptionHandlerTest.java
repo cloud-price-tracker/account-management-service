@@ -1,5 +1,6 @@
 package cpt.api.account_management_service.exception;
 
+import cpt.api.account_management_service.enums.AccountManagementError;
 import cpt.api.account_management_service.model.response.ErrorDetails;
 import cpt.api.account_management_service.model.response.GlobalErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -112,5 +113,29 @@ public class GlobalExceptionHandlerTest {
         assertEquals(1, errors.size());
         assertEquals("1002", errors.getFirst().errorCode());
         assertEquals("username must not be blank", errors.getFirst().errorMessage());
+    }
+
+    @Test
+    public void handleNonCumulativeInvalidLoginException_shouldReturnStatusAndErrorDetails_whenCalled() {
+        // Arrange
+        String uri = "/api/test-non-cumulative";
+        when(request.getRequestURI()).thenReturn(uri);
+
+        NonCumulativeException exception = new NonCumulativeException(AccountManagementError.INVALID_LOGIN_INFORMATION);
+
+        // Act
+        ResponseEntity<GlobalErrorResponse> responseEntity = globalExceptionHandler.handleNonCumulativeException(exception, request);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        GlobalErrorResponse body = responseEntity.getBody();
+        assertNotNull(body);
+        assertEquals("401", body.errorResponseDetails().status());
+        assertEquals(uri, body.errorResponseDetails().path());
+
+        List<ErrorDetails> errors = body.errorResponseDetails().errors();
+        assertEquals(1, errors.size());
+        assertEquals(AccountManagementError.INVALID_LOGIN_INFORMATION.getErrorCode(), errors.getFirst().errorCode());
+        assertEquals(AccountManagementError.INVALID_LOGIN_INFORMATION.getErrorMessage(), errors.getFirst().errorMessage());
     }
 }

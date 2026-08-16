@@ -4,7 +4,7 @@ import cpt.api.account_management_service.exception.InvalidRequestBodyException;
 import cpt.api.account_management_service.model.request.AccountRegistrationRequest;
 import cpt.api.account_management_service.repository.UserRepository;
 import cpt.api.account_management_service.services.validation.AccountRegistrationRequestValidator;
-import cpt.api.account_management_service.utils.AccountRegistrationRequestUtils;
+import cpt.api.account_management_service.utils.UnitTestRequestUtils;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -53,7 +53,7 @@ public class AccountRegistrationRequestValidatorTest {
         String email = "testEmail";
         String username = "testUsername";
         String password = "testPassword";
-        AccountRegistrationRequest accountRegistrationRequest = AccountRegistrationRequestUtils.generateAccountRegistrationRequest(
+        AccountRegistrationRequest accountRegistrationRequest = UnitTestRequestUtils.generateAccountRegistrationRequest(
                 username, email, password);
 
         when(userRepository.existsByEmail(email)).thenReturn(!emailExists);

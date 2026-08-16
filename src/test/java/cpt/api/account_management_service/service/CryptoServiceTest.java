@@ -64,4 +64,20 @@ public class CryptoServiceTest {
         assertFalse(token.isEmpty());
         assertTrue(token.matches(URL_SAFE_CHAR_REGEX));
     }
+
+    @Test
+    public void cryptoServiceVerifyPassword_shouldCorrectlyVerifyPassword () {
+        // Arrange
+        String testPassword = "testPassword";
+        String wrongPassword = "wrongPassword";
+        String hashedPassword = cryptoService.hashPassword(testPassword);
+
+        // Act
+        boolean correctValidation = cryptoService.verifyPassword(testPassword, hashedPassword);
+        boolean incorrectValidation = cryptoService.verifyPassword(wrongPassword, hashedPassword);
+
+        // Assert
+        assertTrue(correctValidation);
+        assertFalse(incorrectValidation);
+    }
 }
